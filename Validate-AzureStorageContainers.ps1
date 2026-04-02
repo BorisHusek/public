@@ -112,8 +112,7 @@ function Test-ContainersViaRestApi {
     $method      = "GET"
     $requestDate = [DateTime]::UtcNow.ToString("R")
     $apiVersion  = "2020-08-04"
-    $resource    = "/?comp=list"
-    $uri         = "https://$AccountName.blob.core.windows.net/$resource"
+    $uri         = "https://$AccountName.blob.core.windows.net/?comp=list"
 
     # ── Build the Shared Key signature ──────────────────────────────────────
     # Canonicalized headers
@@ -162,7 +161,8 @@ function Test-ContainersViaRestApi {
     $response = Invoke-WebRequest -Uri $uri -Method $method -Headers $headers -UseBasicParsing
 
     # ── Parse XML response ───────────────────────────────────────────────────
-    [xml] $xml        = $response.Content
+    $xml = [System.Xml.XmlDocument]::new()
+    $xml.LoadXml($response.Content.TrimStart([char]0xFEFF))
     $containerNodes   = $xml.EnumerationResults.Containers.Container
 
     return $containerNodes
